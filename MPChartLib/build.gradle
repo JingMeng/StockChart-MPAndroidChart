@@ -1,15 +1,17 @@
 apply plugin: 'com.android.library'
-apply plugin: 'maven'
-apply plugin: 'com.github.dcendents.android-maven'
 //apply plugin: 'realm-android'
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion '28.0.3'
+    namespace 'com.github.mikephil.charting'
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    compileSdk 34
     // resourcePrefix 'mpcht'
     defaultConfig {
-        minSdkVersion 15
-        targetSdkVersion 28
+        minSdk 15
+        targetSdk 34
         versionCode 3
         versionName '3.1.0'
     }
@@ -18,6 +20,7 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    
     }
     lintOptions {
         abortOnError false
@@ -27,18 +30,13 @@ android {
     }
 }
 
-repositories {
-    maven {
-        url 'http://oss.jfrog.org/artifactory/oss-snapshot-local'
-    }
-}
 
 dependencies {
     //compile fileTree(dir: 'libs', include: ['*.jar'])
     //compile 'com.android.support:support-v4:19.+'
     //provided 'io.realm:realm-android:0.87.5' // "optional" dependency to realm-database API
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:1.9.5'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:1.9.5'
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'org.greenrobot:eventbus:3.1.1'
 }
@@ -46,14 +44,14 @@ dependencies {
 android.libraryVariants.all { variant ->
     def name = variant.buildType.name
     def task = project.tasks.create "jar${name.capitalize()}", Jar
-    task.dependsOn variant.javaCompile
-    task.from variant.javaCompile.destinationDir
+    task.dependsOn variant.javaCompileProvider
+    task.from variant.javaCompileProvider.map { it.destinationDirectory }
     artifacts.add('archives', task);
 }
 
 task sourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
+    archiveClassifier.set('sources')
 }
 
 task javadoc(type: Javadoc) {
@@ -64,7 +62,7 @@ task javadoc(type: Javadoc) {
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+    archiveClassifier.set('javadoc')
     from javadoc.destinationDir
 }
 
@@ -72,3 +70,5 @@ artifacts {
     archives sourcesJar
     archives javadocJar
 }
+
+
